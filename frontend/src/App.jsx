@@ -3,6 +3,16 @@ import { ResolutionPage1, ResolutionPage2 } from './components/ResolutionContent
 import SignatureTable from './components/SignatureTable';
 import SignatureDialog from './components/SignatureDialog';
 
+const API_BASE_URL =
+  (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_API_BASE_URL) ||
+  'https://twopage-manakatha.onrender.com';
+
+function apiUrl(path) {
+  const base = String(API_BASE_URL || '').replace(/\/+$/, '');
+  const p = String(path || '').startsWith('/') ? String(path) : `/${path}`;
+  return `${base}${p}`;
+}
+
 const App = () => {
   const [shareholders] = useState([
     "N. Thiruchelvam", "T. Gnanaraj", "T.Palanivel", "S. Lavatheepan",
@@ -26,7 +36,7 @@ const App = () => {
     if (isBlocked) return;
 
     try {
-      const response = await fetch('/api/signatures/latest');
+      const response = await fetch(apiUrl('/api/signatures/latest'));
       const result = await response.json();
       if (result.success && result.data) {
         if (result.data.signatures) {
@@ -80,7 +90,7 @@ const App = () => {
     setSigSavingStates((prev) => ({ ...prev, [key]: true }));
 
     try {
-      const response = await fetch('/api/save-signature', {
+      const response = await fetch(apiUrl('/api/save-signature'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ index: key, signature: dataUrl }),
@@ -104,7 +114,7 @@ const App = () => {
   const handleReset = async () => {
     if (!window.confirm("This will permanently clear ALL signatures and reset the submission status. Continue?")) return;
     try {
-      const response = await fetch('/api/signatures/reset', { method: 'DELETE' });
+      const response = await fetch(apiUrl('/api/signatures/reset'), { method: 'DELETE' });
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         throw new Error(errorData.error || 'Reset failed');
@@ -141,7 +151,7 @@ const App = () => {
     };
 
     try {
-      const response = await fetch('/api/signatures', {
+      const response = await fetch(apiUrl('/api/signatures'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
@@ -187,7 +197,7 @@ const App = () => {
             {' '}
             <code>{typeof window !== 'undefined' ? `http://${window.location.hostname}:5173/` : 'http://127.0.0.1:5173/'}</code>
             {' '}
-            (Vite dev server; API is proxied to <code>http://127.0.0.1:3000</code>).
+            (Vite dev server; API is proxied to <code>http://127.0.0.1:3001</code>).
           </div>
         )}
         {!!lastSyncError && !isBlocked && (
