@@ -1,0 +1,5 @@
+node_modules/
+.env
+signatures/*.json
+!signatures/latest_signatures.json
+.vscode/

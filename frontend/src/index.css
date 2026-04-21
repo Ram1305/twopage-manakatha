@@ -1,0 +1,588 @@
+:root {
+  --primary-color: #1a1a6e;
+  --primary-hover: #2a2a9e;
+  --bg-color: #e0e0e0;
+  --page-bg: #ffffff;
+  --border-color: #000000;
+  --text-color: #000000;
+  --hint-color: #aaa;
+  --font-family: "Times New Roman", Times, serif;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: var(--font-family);
+  font-size: 11pt !important; /* Professional legal document size */
+  background: var(--bg-color);
+  color: var(--text-color);
+  padding: 20px 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.only-print {
+  display: none !important;
+}
+
+.no-print {
+  display: block;
+}
+
+/* Footer bar pinning (Global) */
+.footer-bar {
+  position: absolute;
+  bottom: 8mm; /* Matches PDF vertical margin */
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-size: 10pt;
+  color: var(--text-color);
+  pointer-events: none;
+}
+
+.document-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  width: 100%;
+}
+
+.page {
+  width: 100%;
+  max-width: 210mm; /* A4 width limit */
+  min-height: auto;
+  margin: 0 auto;
+  padding: 5vw; /* Fluid padding for mobile */
+  background: var(--page-bg);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+@media (min-width: 210mm) {
+  .page {
+    width: 210mm;
+    min-height: 297mm;
+    padding: 18mm; /* Standard A4 padding for desktop */
+    position: relative; /* Anchor for absolutely positioned footers */
+  }
+}
+
+.page-border {
+  position: absolute;
+  top: 8mm;
+  left: 8mm;
+  right: 8mm;
+  bottom: 8mm;
+  border: 2px solid var(--border-color);
+  pointer-events: none;
+}
+
+/* Hide border on very small screens to save space and prevent overlap */
+@media (max-width: 600px) {
+  .page-border {
+    display: none;
+  }
+  .page {
+    padding: 30px 20px; /* More padding for mobile */
+  }
+}
+
+/* Typography */
+h1, h2, h3 {
+  font-weight: bold;
+}
+
+.tamil {
+  font-size: 16pt;
+  font-weight: bold;
+  letter-spacing: 1px;
+}
+
+@media (min-width: 480px) {
+  .tamil {
+    font-size: 20pt;
+  }
+}
+
+.english {
+  font-size: 10pt;
+  font-weight: bold;
+  letter-spacing: 1px;
+}
+
+@media (min-width: 480px) {
+  .english {
+    font-size: 12pt;
+  }
+}
+
+/* Header */
+.header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border: 1.5px solid var(--border-color);
+  padding: 10px 14px;
+  margin-bottom: 16px;
+  gap: 10px;
+  text-align: center;
+}
+
+@media (min-width: 768px) {
+  .header {
+    flex-direction: row;
+    align-items: flex-start;
+    text-align: left;
+  }
+}
+
+.logo-box img {
+  width: 60px;
+  height: 60px;
+  object-fit: contain;
+}
+
+@media (min-width: 480px) {
+  .logo-box img {
+    width: 72px;
+    height: 72px;
+  }
+}
+
+.header-center {
+  flex: 1;
+}
+
+@media (min-width: 768px) {
+  .header-center {
+    text-align: center;
+  }
+}
+
+.addr {
+  font-size: 8pt;
+  line-height: 1.5;
+  min-width: 130px;
+  text-align: center;
+}
+
+@media (min-width: 768px) {
+  .addr {
+    font-size: 9pt;
+    text-align: right;
+  }
+}
+
+/* Tables */
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th, td {
+  border: 1px solid var(--border-color);
+  padding: 8px;
+}
+
+/* Buttons */
+.btn {
+  font-family: var(--font-family);
+  cursor: pointer;
+  border: none;
+  border-radius: 4px;
+  transition: all 0.2s;
+  padding: 10px 20px;
+}
+
+.btn-primary {
+  background: var(--primary-color);
+  color: white;
+}
+
+.btn-primary:hover {
+  background: var(--primary-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(26, 26, 110, 0.3);
+}
+
+.btn-secondary {
+  background: #f0f0f0;
+  color: #333;
+  border: 1px solid #ccc;
+}
+
+.btn-secondary:hover {
+  background: #e5e5e5;
+}
+
+/* Signature Styles */
+.sig-cell {
+  height: 50px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  background: #fafafa;
+  transition: background 0.2s;
+}
+
+.sig-cell:focus {
+  outline: none;
+}
+
+.sig-cell[role="button"]:focus-visible {
+  outline: 2px solid rgba(26, 26, 110, 0.55);
+  outline-offset: 2px;
+}
+
+.sig-cell:hover:not(.submitted) {
+  background: #f0f5ff;
+}
+
+.sig-cell.signed {
+  background: #fff;
+}
+
+.sig-placeholder {
+  color: var(--hint-color);
+  font-size: 9pt;
+  font-style: italic;
+}
+
+.sig-image {
+  max-height: 44px;
+  max-width: 100%;
+}
+
+.edit-hint {
+  position: absolute;
+  bottom: 2px;
+  right: 5px;
+  font-size: 7.5pt;
+  color: #bbb;
+}
+
+/* Signature list layout: table on all screens */
+.sig-block {
+  width: 100%;
+  margin-top: 16px;
+}
+
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border: 1px solid #eee;
+  border-radius: 10px;
+  background: #fff;
+}
+
+.sig-tbl {
+  min-width: 560px; /* keep desktop table readable */
+}
+
+/* Signature dialog modal */
+.sig-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 18px;
+}
+
+.sig-modalBackdrop {
+  position: absolute;
+  inset: 0;
+  border: none;
+  background: rgba(0, 0, 0, 0.45);
+  cursor: pointer;
+}
+
+.sig-modalPanel {
+  position: relative;
+  width: min(860px, 100%);
+  max-height: min(88vh, 760px);
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 16px 50px rgba(0, 0, 0, 0.25);
+  overflow: hidden;
+}
+
+.sig-modalHeader {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border-bottom: 1px solid #eee;
+  background: #fafafa;
+}
+
+.sig-modalTitle {
+  font-weight: 700;
+  font-size: 11pt;
+  color: #222;
+  flex: 1;
+}
+
+.sig-modalClose {
+  border: 1px solid #ddd;
+  background: #fff;
+  border-radius: 10px;
+  width: 34px;
+  height: 34px;
+  cursor: pointer;
+}
+
+.sig-modalBody {
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.sig-padWrap {
+  border: 2px solid #000;
+  border-radius: 10px;
+  background: #fff;
+  overflow: hidden;
+  touch-action: none;
+}
+
+.sig-padCanvas {
+  width: 100% !important;
+  height: 260px !important;
+  display: block;
+  cursor: crosshair;
+  touch-action: none;
+}
+
+@media (max-width: 600px) {
+  .sig-padCanvas {
+    height: 220px !important;
+  }
+}
+
+.sig-modalHint {
+  font-size: 9pt;
+  color: #666;
+}
+
+.sig-modalActions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  border-top: 1px solid #eee;
+  background: #fafafa;
+}
+
+/* Print Overrides */
+@media print {
+  @page {
+    size: A4;
+    margin: 0;
+  }
+
+  body {
+    background: white !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    font-family: var(--font-family) !important;
+    font-size: 11pt !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .document-container {
+    display: block !important;
+    width: 100% !important;
+    gap: 0 !important;
+  }
+
+  .page {
+    box-shadow: none !important;
+    margin: 0 !important;
+    width: 210mm !important;
+    min-height: 297mm !important; 
+    padding: 18mm !important; 
+    position: relative !important;
+    display: flex !important;
+    flex-direction: column !important;
+    page-break-after: always !important;
+    break-after: page !important;
+    border: none !important;
+  }
+
+  /* Slightly tighter layout on page 2 only to avoid a 3rd page spill */
+  #mainPage {
+    padding: 16mm !important;
+  }
+
+  #mainPage hr {
+    margin: 10px 0 !important;
+  }
+
+  /* Footer bar pinning */
+  .footer-bar {
+    position: absolute !important;
+    bottom: 10mm !important;
+    left: 0 !important;
+    right: 0 !important;
+    margin: 0 !important;
+    text-align: center !important;
+  }
+
+  /* Ensure the last page also has its break if needed, though usually auto is fine */
+  .page:last-child {
+    page-break-after: auto !important;
+    break-after: auto !important;
+  }
+
+  /* Reset border positions for print to match PDF exactly */
+  .page-border {
+    position: absolute !important;
+    top: 8mm !important;
+    left: 8mm !important;
+    right: 8mm !important;
+    bottom: 8mm !important;
+    border: 2px solid #000 !important;
+    display: block !important;
+    pointer-events: none;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+
+  .only-print {
+    display: block !important;
+  }
+
+  .sig-print-image {
+    display: flex !important;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+  }
+
+  /* Hide the post-submit status banner in the printed document.
+     It is useful on screen but adds extra height and can push content
+     onto an unwanted 3rd page. */
+  .submitted-banner {
+    display: none !important;
+  }
+
+  .sig-cardView {
+    display: none !important;
+  }
+
+  .sig-tableView {
+    display: block !important;
+  }
+
+  /* Keep signature table clean on print */
+  .sig-tbl th, .sig-tbl td {
+    border: 1px solid #000 !important;
+  }
+
+  /* Tighten signature section so rows 8–12 stay on page 2 */
+  .sig-block {
+    margin-top: 8px !important;
+  }
+
+  .sig-tbl {
+    min-width: auto !important; /* allow table to fit page width in print */
+  }
+
+  .sig-tbl th,
+  .sig-tbl td {
+    padding: 3px 5px !important;
+    font-size: 9.5pt !important;
+    line-height: 1.2 !important;
+  }
+
+  .sig-cell {
+    height: 34px !important;
+  }
+
+  .sig-image {
+    max-height: 28px !important;
+  }
+
+  /* Force header to match the on-screen (desktop) layout in print.
+     Print uses A4 padding which reduces content width and can trigger
+     the stacked/mobile header rules otherwise. */
+  .header {
+    flex-direction: row !important;
+    align-items: flex-start !important;
+    text-align: left !important;
+  }
+
+  .header-center {
+    text-align: center !important;
+  }
+
+  .addr {
+    text-align: right !important;
+    font-size: 9pt !important;
+    min-width: 130px !important;
+  }
+
+  .logo-box img {
+    width: 72px !important;
+    height: 72px !important;
+  }
+
+  .page1-signature-section {
+    display: none !important;
+  }
+}
+
+/* Page 1 Signature Styles */
+.page1-signature-section {
+  padding: 15px;
+  background: #fdfdfd;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  border: 1px solid #eee;
+  max-width: 500px;
+  margin: 20px auto 0;
+}
+
+.page1-sig-wrapper {
+  position: relative;
+  overflow: hidden;
+  cursor: crosshair;
+}
+
+.page1-sig-wrapper canvas {
+  touch-action: none;
+}
+
+.page1-signed-display {
+  padding: 10px;
+  border: 1px dashed #ccc;
+  border-radius: 8px;
+  background: #fff;
+  display: inline-block;
+  margin: 15px auto;
+}
+
+.page1-signed-display img {
+  display: block;
+  margin: 0 auto;
+}

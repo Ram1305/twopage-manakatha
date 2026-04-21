@@ -1,0 +1,17 @@
+{
+  "name": "resolution-signatures",
+  "version": "1.0.0",
+  "description": "Multi-user signature sync",
+  "main": "api/index.js",
+  "scripts": {
+    "start": "node api/index.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "express": "^4.22.1",
+    "fs-extra": "^11.3.4",
+    "mongodb": "^7.1.1",
+    "mongoose": "^7.5.0"
+  }
+}
