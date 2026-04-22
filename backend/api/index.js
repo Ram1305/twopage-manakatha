@@ -60,6 +60,29 @@ mongoose
   });
 
 // ── Schema & Model ────────────────────────────────────────────────────────────
+const SHAREHOLDER_NAMES = [
+  'N. Thiruchelvam',
+  'T. Gnanaraj',
+  'T.Palanivel',
+  'S. Lavatheepan',
+  'P. Gopalakrishnan',
+  'S. Balenthiran',
+  'S. Balarajan',
+  'A.Navajeevan',
+  'S. Srirenganathan',
+  'T. Krishnarajh',
+  'T. Kumararasan',
+  'S. Manimaran',
+];
+
+function nameForIndex(index) {
+  const n = Number(index);
+  if (Number.isFinite(n) && Number.isInteger(n) && n >= 0 && n < SHAREHOLDER_NAMES.length) {
+    return SHAREHOLDER_NAMES[n];
+  }
+  return `Shareholder #${String(index)}`;
+}
+
 const signatureSchema = new mongoose.Schema({
   signatures: {
     type: Map,
@@ -73,6 +96,22 @@ const signatureSchema = new mongoose.Schema({
 });
 
 const Signature = mongoose.model('signatures', signatureSchema);
+
+// ── Archive: store every signature event ──────────────────────────────────────
+const signatureArchiveSchema = new mongoose.Schema(
+  {
+    index: { type: String, required: true },
+    name: { type: String, required: true },
+    signature: { type: String, default: '' }, // data URL
+    event: { type: String, enum: ['saved', 'cleared'], required: true },
+    createdAt: { type: Date, default: Date.now, index: true },
+  },
+  { versionKey: false }
+);
+
+signatureArchiveSchema.index({ index: 1, createdAt: -1 });
+
+const SignatureArchive = mongoose.model('signature_archives', signatureArchiveSchema);
 
 // ── Helper: get or create the single document ─────────────────────────────────
 async function getDoc() {
@@ -138,6 +177,9 @@ app.post('/api/save-signature', async (req, res) => {
       return res.status(403).json({ success: false, error: 'Resolution already submitted. No changes allowed.' });
     }
 
+    const name = nameForIndex(key);
+    const isClearing = !signature || signature === '';
+
     if (!signature || signature === '') {
       doc.signatures.delete(key);
     } else {
@@ -147,6 +189,14 @@ app.post('/api/save-signature', async (req, res) => {
     doc.lastUpdated = new Date();
     doc.markModified('signatures'); // Required for Mongoose Map to detect changes
     await doc.save();
+
+    // Archive every event (even clears) for recovery/audit.
+    await SignatureArchive.create({
+      index: key,
+      name,
+      signature: isClearing ? '' : signature,
+      event: isClearing ? 'cleared' : 'saved',
+    });
 
     // Return plain object
     const signatures = {};
@@ -206,6 +256,7 @@ app.delete('/api/signatures/reset', async (req, res) => {
       return res.status(503).json({ success: false, error: 'MongoDB not connected' });
     }
 
+    // NOTE: We intentionally do NOT touch the archive collection here.
     await Signature.deleteMany({});
     await Signature.create({});
     console.log('[reset] Signatures reset (MongoDB)');
@@ -213,6 +264,52 @@ app.delete('/api/signatures/reset', async (req, res) => {
   } catch (err) {
     console.error('[DELETE /api/signatures/reset]', err.message);
     res.status(500).json({ success: false, error: 'Reset failed' });
+  }
+});
+
+// POST /api/signatures/recover-latest — restore current signatures from archive
+app.post('/api/signatures/recover-latest', async (req, res) => {
+  try {
+    if (!mongoReady || mongoose.connection.readyState !== 1) {
+      return res.status(503).json({ success: false, error: 'MongoDB not connected' });
+    }
+
+    const doc = await getDoc();
+
+    if (doc.submitted) {
+      return res.status(403).json({ success: false, error: 'Resolution already submitted. Recovery is blocked.' });
+    }
+
+    const next = {};
+    for (let i = 0; i < SHAREHOLDER_NAMES.length; i++) {
+      const latest = await SignatureArchive.findOne({
+        index: String(i),
+        event: 'saved',
+        signature: { $ne: '' },
+      }).sort({ createdAt: -1 });
+      if (latest?.signature) {
+        next[String(i)] = latest.signature;
+      }
+    }
+
+    doc.signatures = new Map(Object.entries(next));
+    doc.submitted = false;
+    doc.lastUpdated = new Date();
+    doc.markModified('signatures');
+    await doc.save();
+
+    return res.json({
+      success: true,
+      data: {
+        signatures: next,
+        submitted: doc.submitted,
+        date: doc.date,
+        lastUpdated: doc.lastUpdated,
+      },
+    });
+  } catch (err) {
+    console.error('[POST /api/signatures/recover-latest]', err.message);
+    res.status(500).json({ success: false, error: 'Recovery failed' });
   }
 });
 
